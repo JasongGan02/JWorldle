@@ -74,13 +74,14 @@ public class JWordleLogic{
 
       if (GameLauncher.DEBUG_USE_HARDCODED_WORD)
       {
-         JWordleGUI.setGridLetter(0, 0, 'C');
-         JWordleGUI.setGridColor(0, 0, CORRECT_COLOR);
-         JWordleGUI.setGridLetter(1, 3, 'O');
-         JWordleGUI.setGridColor(1, 3, WRONG_COLOR);
-         JWordleGUI.setGridLetter(3, 4, 'S');
-         JWordleGUI.setGridLetter(5, 4, 'C');
-         JWordleGUI.setGridColor(5, 4, WRONG_PLACE_COLOR);
+         // JWordleGUI.setGridLetter(0, 0, 'C');
+         // JWordleGUI.setGridColor(0, 0, CORRECT_COLOR);
+         // JWordleGUI.setGridLetter(1, 3, 'O');
+         // JWordleGUI.setGridColor(1, 3, WRONG_COLOR);
+         // JWordleGUI.setGridLetter(3, 4, 'S');
+         // JWordleGUI.setGridLetter(5, 4, 'C');
+         // JWordleGUI.setGridColor(5, 4, WRONG_PLACE_COLOR);
+         JWordleGUI.setGridLetter(0, 0, ' ');
          return DEBUG_SECRET_WORD;
       }
          
@@ -99,10 +100,27 @@ public class JWordleLogic{
    public static void keyPressed(char key){
       
        //implement me!
-       int charNum = (int) key;
-       if (charNum == 87)
-         JWordleGUI.wiggleGrid(3);
+      //  int charNum = (int) key;
+      //  if (charNum == 87)
+      //    JWordleGUI.wiggleGrid(3);
+      // if(currentCol<5)
+      // {
+      //    if(key == BACKSPACE_KEY && JWordleGUI.getGridLetter(currentRow, currentCol))
+      //    {
+      //       JWordleGUI.setGridLetter(currentRow, currentCol, ' ');
+      //       JWordleGUI.setGridColor(currentRow, currentCol, DEFAULT_KEYBOARD_COLOR);
+      //       currentCol--;
+      //    }
+      //    else if(key == ENTER_KEY)
+      //    {
 
+      //    }
+      //    else
+      //    {
+
+      //    }
+      //    //ALL_LETTERS.indexOf(keyChar) >= 0 || keyChar == JWordleLogic.ENTER_KEY || keyChar == JWordleLogic.BACKSPACE_KEY
+      // }
        System.out.println("keyPressed called! key (int value) = '" + ((int)key) + "'");
    }
    
