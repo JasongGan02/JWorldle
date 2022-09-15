@@ -38,11 +38,11 @@ public class JWordleLogic{
    private static final String WORDS_FILENAME = "words.txt";
    
    //Secret word used when the game is running in debug mode
-   private static final char[] DEBUG_SECRET_WORD = {'S', 'H', 'I', 'R', 'E'};      
+   private static final char[] DEBUG_SECRET_WORD = {'E', 'M', 'B', 'E', 'R'};      
    
-   
+
    //...Feel free to add more final variables of your own!
-      
+   private static final Color[] COLOR_MAP = {CORRECT_COLOR, WRONG_PLACE_COLOR};
             
    
    
@@ -81,7 +81,7 @@ public class JWordleLogic{
          // JWordleGUI.setGridLetter(3, 4, 'S');
          // JWordleGUI.setGridLetter(5, 4, 'C');
          // JWordleGUI.setGridColor(5, 4, WRONG_PLACE_COLOR);
-         JWordleGUI.setGridLetter(0, 0, ' ');
+         
          return DEBUG_SECRET_WORD;
       }
          
@@ -89,8 +89,96 @@ public class JWordleLogic{
       return null;  //placeholder...
    }
    
-               
+   public static boolean traverseArray(char[] arr, char key) //traverse the word to see if current char is in it
+   {
+      for(char each: arr)
+      {
+         if(key == each)
+            return true;
+      }
+      return false;
+   }
    
+   public static void paintKey(char key, Color color)
+   {
+      Color currentColor = JWordleGUI.getKeyColor(key);
+      if(!currentColor.equals(CORRECT_COLOR))
+      {
+         JWordleGUI.setKeyColor(key, color); 
+      }
+      
+   }
+
+   public static void enterAction() 
+   {
+      if(currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)!=NULL_CHAR)
+            {
+               if(evaluating())
+               {
+                  JWordleGUI.endGame(true);
+               }
+               currentRow++;
+               currentCol = 0;
+            }
+   }
+
+   public static boolean evaluating() //evaluate each char in the word
+   {
+      boolean result = true;
+      for(int i =0; i<5; i++)
+      {
+         char currentKey = JWordleGUI.getGridLetter(currentRow, i);
+         if ( currentKey == DEBUG_SECRET_WORD[i])
+         {
+            JWordleGUI.setGridColor(currentRow, i, CORRECT_COLOR);
+            paintKey(currentKey, CORRECT_COLOR);
+            
+         }
+         else if(traverseArray(DEBUG_SECRET_WORD, currentKey)) //in the word, but wrong place
+         {
+            JWordleGUI.setGridColor(currentRow, i, WRONG_PLACE_COLOR);
+            paintKey(currentKey, WRONG_PLACE_COLOR);
+            result = false;
+         }
+         else
+         {
+            JWordleGUI.setGridColor(currentRow, i, WRONG_COLOR);
+            paintKey(currentKey, WRONG_COLOR);
+            result = false;
+         }
+      }
+      return result;
+   }
+
+   public static void input(char key) //input valid character
+   {
+      if(currentCol<4)
+      {
+         JWordleGUI.setGridLetter(currentRow, currentCol, key);
+         currentCol++;
+      }
+      else if(currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)==NULL_CHAR)
+      {
+         JWordleGUI.setGridLetter(currentRow, currentCol, key);
+      }
+   }
+
+   public static void backspace(char key) //delete character 
+   {
+     
+      if(currentCol!=0 && currentCol!=4 || (currentCol ==4 && JWordleGUI.getGridLetter(currentRow, currentCol)== NULL_CHAR) )
+      {
+         JWordleGUI.setGridLetter(currentRow, currentCol-1, NULL_CHAR);
+         currentCol--;
+      }
+      else if (currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)!= NULL_CHAR)
+      {
+         currentCol++;
+         JWordleGUI.setGridLetter(currentRow, currentCol-1, NULL_CHAR);
+         currentCol--;
+      }
+      
+   }
    
    //This function gets called everytime the user types a valid key on the
    //keyboard (alphabetic character, enter, or backspace) or clicks one of the
@@ -103,25 +191,28 @@ public class JWordleLogic{
       //  int charNum = (int) key;
       //  if (charNum == 87)
       //    JWordleGUI.wiggleGrid(3);
-      // if(currentCol<5)
-      // {
-      //    if(key == BACKSPACE_KEY && JWordleGUI.getGridLetter(currentRow, currentCol))
-      //    {
-      //       JWordleGUI.setGridLetter(currentRow, currentCol, ' ');
-      //       JWordleGUI.setGridColor(currentRow, currentCol, DEFAULT_KEYBOARD_COLOR);
-      //       currentCol--;
-      //    }
-      //    else if(key == ENTER_KEY)
-      //    {
-
-      //    }
-      //    else
-      //    {
-
-      //    }
-      //    //ALL_LETTERS.indexOf(keyChar) >= 0 || keyChar == JWordleLogic.ENTER_KEY || keyChar == JWordleLogic.BACKSPACE_KEY
-      // }
-       System.out.println("keyPressed called! key (int value) = '" + ((int)key) + "'");
+      if(currentCol<5 && currentRow<6)
+      {
+         if(key == BACKSPACE_KEY)
+         {
+            backspace(key);
+         }
+         else if(key == ENTER_KEY)
+         {
+            enterAction();
+         }
+         else
+         {    
+            input(key);
+         }
+      }
+      else if(currentRow==5)
+      {
+         JWordleGUI.endGame(evaluating());
+      }
+      
+      System.out.println(currentRow+" "+currentCol);
+      System.out.println("keyPressed called! key (int value) = '" + ((int)key) + "'");
    }
    
    
