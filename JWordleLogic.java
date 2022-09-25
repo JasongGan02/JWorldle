@@ -2,6 +2,9 @@ import java.awt.Color;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
 
@@ -38,11 +41,11 @@ public class JWordleLogic{
    private static final String WORDS_FILENAME = "words.txt";
    
    //Secret word used when the game is running in debug mode
-   private static final char[] DEBUG_SECRET_WORD = {'B', 'A', 'N', 'A', 'L'};      
+   private static final char[] DEBUG_SECRET_WORD = {'E', 'M', 'B', 'E', 'R'};      
    
 
    //...Feel free to add more final variables of your own!
-   private static final Color[] COLOR_MAP = {CORRECT_COLOR, WRONG_PLACE_COLOR};
+
             
    
    
@@ -85,9 +88,8 @@ public class JWordleLogic{
          
          return DEBUG_SECRET_WORD;
       }
-         
+      
       char[] result = randomizedWord();
-      System.out.println(Arrays.toString(result));
       return result;  //placeholder...
    }
 
@@ -108,23 +110,30 @@ public class JWordleLogic{
    {
       char[] result = new char[MAX_COLS];
       String word ="";
-      for(int i = 0; i<rand.nextInt(0, WORDS_IN_FILE); i++)
+      int random = rand.nextInt(0, WORDS_IN_FILE);
+      Scanner scan = getScanner();
+      for(int i = 0; i< random; i++)
       {
-         word = getScanner().nextLine();   
+         word = scan.next();   
       }
       word = word.toUpperCase();
       result = word.toCharArray();
       return result;
+      
    }
 
-   public static boolean traverseArray(char[] arr, char key) //traverse the word to see if current char is in it
+   public static Hashtable<Character, Integer> countMap(char[] arr)
    {
+      Hashtable<Character, Integer> countDic = new Hashtable<Character, Integer>();
       for(char each: arr)
       {
-         if(key == each)
-            return true;
+         if(countDic.get(each)!=null)
+            countDic.put(each, countDic.get(each)+1);
+         else
+            countDic.put(each, 1);
       }
-      return false;
+      return countDic;
+         
    }
    
    public static void paintKey(char key, Color color)
@@ -139,6 +148,8 @@ public class JWordleLogic{
 
    public static boolean validInput() //check if the input is valid in words.
    {
+      if(GameLauncher.DEBUG_ALLOW_ANY_GUESS) 
+         return true;
       Scanner scan = getScanner();
       String currentString ="";
       for(int i =0; i<MAX_COLS; i++)
@@ -158,6 +169,7 @@ public class JWordleLogic{
 
    public static void enterAction() //make sure evaluating will only work when it is the last col; It also evaluate whether the game ends or not.
    {
+      
       if(currentCol==MAX_COLS-1 && JWordleGUI.getGridLetter(currentRow, currentCol)!=NULL_CHAR && validInput())
             {
                if(evaluating())
@@ -183,22 +195,28 @@ public class JWordleLogic{
    {
       boolean result = true;
       char [] secretWord = JWordleGUI.getSecretWord();
+      Hashtable<Character, Integer> countMap  =  countMap(secretWord);
       for(int i =0; i<MAX_COLS; i++)
       {
          char currentKey = JWordleGUI.getGridLetter(currentRow, i);
-         if ( currentKey == secretWord[i])
+         if (currentKey == secretWord[i])
          {
             JWordleGUI.setGridColor(currentRow, i, CORRECT_COLOR);
             paintKey(currentKey, CORRECT_COLOR);
-            
-         }
-         else if(traverseArray(secretWord, currentKey)) //in the word, but wrong place
+            countMap.put(currentKey, countMap.get(currentKey)-1);
+         }  
+      }
+      for(int i =0; i<MAX_COLS; i++)
+      {
+         char currentKey = JWordleGUI.getGridLetter(currentRow, i);
+         if(currentKey != secretWord[i] && countMap.get(currentKey)!=null && countMap.get(currentKey)>0 ) //in the word, but wrong place
          {
             JWordleGUI.setGridColor(currentRow, i, WRONG_PLACE_COLOR);
             paintKey(currentKey, WRONG_PLACE_COLOR);
             result = false;
+            countMap.put(currentKey, countMap.get(currentKey)-1);
          }
-         else
+         else if(currentKey!= secretWord[i] && (countMap.get(currentKey)==null||countMap.get(currentKey)==0))
          {
             JWordleGUI.setGridColor(currentRow, i, WRONG_COLOR);
             paintKey(currentKey, WRONG_COLOR);
