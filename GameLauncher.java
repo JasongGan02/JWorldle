@@ -7,7 +7,7 @@ public class GameLauncher{
    
    //Controls if the hard coded word is used as the secret word (true) or a random
    //word read from the text file (false)
-   public static final boolean DEBUG_USE_HARDCODED_WORD = true;      
+   public static final boolean DEBUG_USE_HARDCODED_WORD = false;      
    
    //Controls if the player can guess any 5 letter string (true) or if the guess must
    //be a word read from the text file (false)

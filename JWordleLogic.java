@@ -71,9 +71,10 @@ public class JWordleLogic{
    //Should return the randomly chosen "secret word" the player needs to guess
    //as a char array
    public static char[] initGame(){
-
+      
       if (GameLauncher.DEBUG_USE_HARDCODED_WORD)
       {
+         
          // JWordleGUI.setGridLetter(0, 0, 'C');
          // JWordleGUI.setGridColor(0, 0, CORRECT_COLOR);
          // JWordleGUI.setGridLetter(1, 3, 'O');
@@ -85,10 +86,37 @@ public class JWordleLogic{
          return DEBUG_SECRET_WORD;
       }
          
-  
-      return null;  //placeholder...
+      char[] result = randomizedWord();
+      System.out.println(Arrays.toString(result));
+      return result;  //placeholder...
    }
-   
+
+   public static Scanner getScanner()
+   {
+      File file = new File(WORDS_FILENAME);
+      Scanner scan = null;
+      try{
+         scan = new Scanner(file);
+         return scan;
+      }
+      catch(FileNotFoundException fnfe){
+         System.out.println("File is not founded");
+      }
+      return scan;
+   }
+   public static char[] randomizedWord()
+   {
+      char[] result = new char[MAX_COLS];
+      String word ="";
+      for(int i = 0; i<rand.nextInt(0, WORDS_IN_FILE); i++)
+      {
+         word = getScanner().nextLine();   
+      }
+      word = word.toUpperCase();
+      result = word.toCharArray();
+      return result;
+   }
+
    public static boolean traverseArray(char[] arr, char key) //traverse the word to see if current char is in it
    {
       for(char each: arr)
@@ -109,36 +137,62 @@ public class JWordleLogic{
       
    }
 
+   public static boolean validInput() //check if the input is valid in words.
+   {
+      Scanner scan = getScanner();
+      String currentString ="";
+      for(int i =0; i<MAX_COLS; i++)
+      {
+         currentString += Character.toString(JWordleGUI.getGridLetter(currentRow, i));
+      }
+      currentString = currentString.toLowerCase();
+      for(int i = 0; i< WORDS_IN_FILE; i++)
+      {
+         if(scan.nextLine().equals(currentString))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
    public static void enterAction() //make sure evaluating will only work when it is the last col; It also evaluate whether the game ends or not.
    {
-      if(currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)!=NULL_CHAR)
+      if(currentCol==MAX_COLS-1 && JWordleGUI.getGridLetter(currentRow, currentCol)!=NULL_CHAR && validInput())
             {
                if(evaluating())
                {
                   JWordleGUI.endGame(true);
+                  getScanner().close();
                }
-               else if(!evaluating() && currentRow==5)
+               else if(!evaluating() && currentRow==MAX_ROWS-1)
                {
                   JWordleGUI.endGame(false);
+                  getScanner().close();
                }
                currentRow++;
                currentCol = 0;
             }
+      else
+      {
+         JWordleGUI.wiggleGrid(currentRow);
+      }
    }
 
    public static boolean evaluating() //evaluate each char in the word
    {
       boolean result = true;
-      for(int i =0; i<5; i++)
+      char [] secretWord = JWordleGUI.getSecretWord();
+      for(int i =0; i<MAX_COLS; i++)
       {
          char currentKey = JWordleGUI.getGridLetter(currentRow, i);
-         if ( currentKey == DEBUG_SECRET_WORD[i])
+         if ( currentKey == secretWord[i])
          {
             JWordleGUI.setGridColor(currentRow, i, CORRECT_COLOR);
             paintKey(currentKey, CORRECT_COLOR);
             
          }
-         else if(traverseArray(DEBUG_SECRET_WORD, currentKey)) //in the word, but wrong place
+         else if(traverseArray(secretWord, currentKey)) //in the word, but wrong place
          {
             JWordleGUI.setGridColor(currentRow, i, WRONG_PLACE_COLOR);
             paintKey(currentKey, WRONG_PLACE_COLOR);
@@ -151,17 +205,18 @@ public class JWordleLogic{
             result = false;
          }
       }
+      
       return result;
    }
 
    public static void input(char key) //input valid character
    {
-      if(currentCol<4)
+      if(currentCol<MAX_COLS-1)
       {
          JWordleGUI.setGridLetter(currentRow, currentCol, key);
          currentCol++;
       }
-      else if(currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)==NULL_CHAR)
+      else if(currentCol==MAX_COLS-1 && JWordleGUI.getGridLetter(currentRow, currentCol)==NULL_CHAR)
       {
          JWordleGUI.setGridLetter(currentRow, currentCol, key);
       }
@@ -170,12 +225,12 @@ public class JWordleLogic{
    public static void backspace(char key) //delete character 
    {
      
-      if(currentCol!=0 && currentCol!=4 || (currentCol ==4 && JWordleGUI.getGridLetter(currentRow, currentCol)== NULL_CHAR) )
+      if(currentCol!=0 && currentCol!= MAX_COLS-1 || (currentCol == MAX_COLS-1 && JWordleGUI.getGridLetter(currentRow, currentCol)== NULL_CHAR) )
       {
          JWordleGUI.setGridLetter(currentRow, currentCol-1, NULL_CHAR);
          currentCol--;
       }
-      else if (currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)!= NULL_CHAR)
+      else if (currentCol== MAX_COLS-1 && JWordleGUI.getGridLetter(currentRow, currentCol)!= NULL_CHAR)
       {
          currentCol++;
          JWordleGUI.setGridLetter(currentRow, currentCol-1, NULL_CHAR);
@@ -195,7 +250,7 @@ public class JWordleLogic{
       //  int charNum = (int) key;
       //  if (charNum == 87)
       //    JWordleGUI.wiggleGrid(3);
-      if(currentCol<5 && currentRow<6)
+      if(currentCol<MAX_COLS && currentRow<MAX_ROWS)
       {
          if(key == BACKSPACE_KEY)
          {
@@ -206,14 +261,11 @@ public class JWordleLogic{
             enterAction();
          }
          else
-         {    
+         {  
+            randomizedWord();  
             input(key);
          }
       }
-      else if(currentRow==5 )
-      {
-         JWordleGUI.endGame(evaluating());
-      }  
       
       System.out.println(currentRow+" "+currentCol);
       System.out.println("keyPressed called! key (int value) = '" + ((int)key) + "'");
