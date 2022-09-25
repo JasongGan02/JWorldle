@@ -38,7 +38,7 @@ public class JWordleLogic{
    private static final String WORDS_FILENAME = "words.txt";
    
    //Secret word used when the game is running in debug mode
-   private static final char[] DEBUG_SECRET_WORD = {'E', 'M', 'B', 'E', 'R'};      
+   private static final char[] DEBUG_SECRET_WORD = {'B', 'A', 'N', 'A', 'L'};      
    
 
    //...Feel free to add more final variables of your own!
@@ -109,13 +109,17 @@ public class JWordleLogic{
       
    }
 
-   public static void enterAction() 
+   public static void enterAction() //make sure evaluating will only work when it is the last col; It also evaluate whether the game ends or not.
    {
       if(currentCol==4 && JWordleGUI.getGridLetter(currentRow, currentCol)!=NULL_CHAR)
             {
                if(evaluating())
                {
                   JWordleGUI.endGame(true);
+               }
+               else if(!evaluating() && currentRow==5)
+               {
+                  JWordleGUI.endGame(false);
                }
                currentRow++;
                currentCol = 0;
@@ -206,10 +210,10 @@ public class JWordleLogic{
             input(key);
          }
       }
-      else if(currentRow==5)
+      else if(currentRow==5 )
       {
          JWordleGUI.endGame(evaluating());
-      }
+      }  
       
       System.out.println(currentRow+" "+currentCol);
       System.out.println("keyPressed called! key (int value) = '" + ((int)key) + "'");
