@@ -4,7 +4,6 @@ import java.util.Scanner;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
 
@@ -41,7 +40,7 @@ public class JWordleLogic{
    private static final String WORDS_FILENAME = "words.txt";
    
    //Secret word used when the game is running in debug mode
-   private static final char[] DEBUG_SECRET_WORD = {'E', 'M', 'B', 'E', 'R'};      
+   private static final char[] DEBUG_SECRET_WORD = {'B', 'A', 'N', 'A', 'L'};      
    
 
    //...Feel free to add more final variables of your own!
@@ -93,29 +92,30 @@ public class JWordleLogic{
       return result;  //placeholder...
    }
 
-   public static Scanner getScanner()
+   public static void readScanner()
    {
       File file = new File(WORDS_FILENAME);
       Scanner scan = null;
+      words = new String[WORDS_IN_FILE];
       try{
          scan = new Scanner(file);
-         return scan;
+         for(int i = 0; i< WORDS_IN_FILE; i++)
+         {
+            words[i]= scan.nextLine();
+         }
+         scan.close();
       }
       catch(FileNotFoundException fnfe){
          System.out.println("File is not founded");
       }
-      return scan;
    }
    public static char[] randomizedWord()
    {
+      readScanner();
       char[] result = new char[MAX_COLS];
       String word ="";
       int random = rand.nextInt(0, WORDS_IN_FILE);
-      Scanner scan = getScanner();
-      for(int i = 0; i< random; i++)
-      {
-         word = scan.next();   
-      }
+      word = words[random];
       word = word.toUpperCase();
       result = word.toCharArray();
       return result;
@@ -150,19 +150,16 @@ public class JWordleLogic{
    {
       if(GameLauncher.DEBUG_ALLOW_ANY_GUESS) 
          return true;
-      Scanner scan = getScanner();
       String currentString ="";
       for(int i =0; i<MAX_COLS; i++)
       {
          currentString += Character.toString(JWordleGUI.getGridLetter(currentRow, i));
       }
       currentString = currentString.toLowerCase();
-      for(int i = 0; i< WORDS_IN_FILE; i++)
+      for(String each: words)
       {
-         if(scan.nextLine().equals(currentString))
-         {
+         if(currentString.equals(each))
             return true;
-         }
       }
       return false;
    }
@@ -174,13 +171,11 @@ public class JWordleLogic{
             {
                if(evaluating())
                {
-                  JWordleGUI.endGame(true);
-                  getScanner().close();
+                  JWordleGUI.endGame(true);   
                }
                else if(!evaluating() && currentRow==MAX_ROWS-1)
                {
                   JWordleGUI.endGame(false);
-                  getScanner().close();
                }
                currentRow++;
                currentCol = 0;
@@ -191,11 +186,9 @@ public class JWordleLogic{
       }
    }
 
-   public static boolean evaluating() //evaluate each char in the word
+   public static void correctPlace(Hashtable<Character, Integer> countMap)
    {
-      boolean result = true;
       char [] secretWord = JWordleGUI.getSecretWord();
-      Hashtable<Character, Integer> countMap  =  countMap(secretWord);
       for(int i =0; i<MAX_COLS; i++)
       {
          char currentKey = JWordleGUI.getGridLetter(currentRow, i);
@@ -206,6 +199,12 @@ public class JWordleLogic{
             countMap.put(currentKey, countMap.get(currentKey)-1);
          }  
       }
+   }
+
+   public static boolean wrongPlace(Hashtable<Character, Integer> countMap)
+   {
+      boolean result = true;
+      char [] secretWord = JWordleGUI.getSecretWord();
       for(int i =0; i<MAX_COLS; i++)
       {
          char currentKey = JWordleGUI.getGridLetter(currentRow, i);
@@ -223,7 +222,16 @@ public class JWordleLogic{
             result = false;
          }
       }
-      
+      return result;
+   }
+
+   public static boolean evaluating() //evaluate each char in the word
+   {
+      boolean result = true;
+      char [] secretWord = JWordleGUI.getSecretWord();
+      Hashtable<Character, Integer> countMap  =  countMap(secretWord);
+      correctPlace(countMap);
+      result = wrongPlace(countMap);
       return result;
    }
 
